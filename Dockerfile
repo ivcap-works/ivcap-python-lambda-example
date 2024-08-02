@@ -1,22 +1,17 @@
-FROM python:3.9-slim-bullseye AS builder
+FROM python:3.11.9-slim-bookworm AS builder
 
 WORKDIR /app
-RUN pip install -U pip poetry
-RUN poetry install
+RUN pip install -U pip
+COPY requirements.txt ./
+RUN pip install -r requirements.txt --force-reinstall
 
 # Get service files
-ADD lambda.py eliza ./
-RUN mv lambda.py service.py
+ADD lambda.py run.sh ./
+ADD eliza ./eliza
 
 # VERSION INFORMATION
-ARG GIT_TAG ???
-ARG GIT_COMMIT ???
-ARG BUILD_DATE ???
-
-ENV IVCAP_SERVICE_VERSION $GIT_TAG
-
-ENV IVCAP_SERVICE_COMMIT $GIT_COMMIT
-ENV IVCAP_SERVICE_BUILD $BUILD_DATE
+ARG VERSION ???
+ENV VERSION $VERSION
 
 # Command to run
-ENTRYPOINT ["fastapi", "run", "/app/service.py"]
+ENTRYPOINT ["/app/run.sh"]
