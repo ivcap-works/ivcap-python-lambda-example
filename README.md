@@ -13,8 +13,8 @@ This service Joseph Weizenbaum's famous Eliza chat bot as a service. Eliza
 doesn't keep any state between rounds of questions and therefore perfectly
 matches our constraints.
 
-The actual Eliza implementation is copied from [Wade Brainerd](http://wadeb.com/)
-[eliza](https://github.com/wadetb/eliza) repo into [./eliza](./eliza).
+The actual Eliza implementation is copied from [Wade Brainerd's](http://wadeb.com/)
+['eliza' repo](https://github.com/wadetb/eliza) into [./eliza](./eliza).
 
 ### [lambda.py](.lambda.py])
 
