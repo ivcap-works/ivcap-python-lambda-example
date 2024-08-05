@@ -31,7 +31,7 @@ app = FastAPI(
         "name": "MIT",
         "url": "https://opensource.org/license/MIT",
     },
-    docs_url="/", # ONLY set when there is no default GET
+    docs_url="/api", # ONLY set when there is no default GET
     root_path=os.environ.get("IVCAP_ROOT_PATH", "")
 )
 
@@ -50,3 +50,8 @@ def root(said: str):
 @app.get("/_healtz")
 def healtz():
     return {"version": os.environ.get("VERSION", "???")}
+
+
+from fastapi.staticfiles import StaticFiles
+app.mount("/", StaticFiles(directory="ui", html=True), name="index")
+app.mount("/assets", StaticFiles(directory="ui"), name="static")

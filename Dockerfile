@@ -8,6 +8,7 @@ RUN pip install -r requirements.txt --force-reinstall
 # Get service files
 ADD lambda.py run.sh ./
 ADD eliza ./eliza
+ADD ui ./ui
 
 # VERSION INFORMATION
 ARG VERSION ???

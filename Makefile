@@ -58,7 +58,7 @@ install:
 
 docker-run: #docker-build
 	docker run -it \
-		-p 8888:8080 \
+		-p 8080:8080 \
 		--user ${DOCKER_USER} \
 		--platform=${TARGET_PLATFORM} \
 		${DOCKER_TAG_LOCAL}
@@ -84,7 +84,7 @@ docker-build:
 SERVICE_IMG := ${DOCKER_DEPLOY}
 PUSH_FROM := ""
 
-docker-publish:
+docker-publish: docker-build
 	@echo "Publishing docker image '${DOCKER_TAG}'"
 	@docker tag ${DOCKER_TAG_LOCAL} ${DOCKER_TAG}
 	$(eval size:=$(shell docker inspect ${DOCKER_TAG} --format='{{.Size}}' | tr -cd '0-9'))
