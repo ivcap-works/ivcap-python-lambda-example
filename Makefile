@@ -57,7 +57,8 @@ PUSH_FROM := ""
 
 docker-publish: docker-build
 	@echo "Publishing docker image '${DOCKER_TAG}'"
-	@docker tag ${DOCKER_TAG_LOCAL} ${DOCKER_TAG}
+	docker tag ${DOCKER_TAG_LOCAL} ${DOCKER_TAG}
+	sleep 1
 	$(eval size:=$(shell docker inspect ${DOCKER_TAG} --format='{{.Size}}' | tr -cd '0-9'))
 	$(eval imageSize:=$(shell expr ${size} + 0 ))
 	@echo "... imageSize is ${imageSize}"
