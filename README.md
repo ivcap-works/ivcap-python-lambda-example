@@ -95,3 +95,30 @@ the approprite section in the [IVCAP Docs](https://ivcap-works.github.io/ivcap-d
 This file describes a simple configuration for building a docker image for
 this service. The make target `make docker-build` will build the image, and
 the `make docker-publish` target will upload it to IVCAP.
+
+## Deploying
+
+```
+% make docker-publish
+Building docker image chat_with_eliza
+docker build \
+                -t chat_with_eliza:latest \
+                --platform=linux/amd64 \
+                --build-arg VERSION="v0.1.0|a2db1d4|2024-08-20T14:49+10:00" \
+                -f /Users/ott030/src/IVCAP/Services/ivcap-python-lambda-service/Dockerfile \
+                /Users/ott030/src/IVCAP/Services/ivcap-python-lambda-service
+[+] Building 1.8s (13/1 FINISHED                           docker:desktop-linux
+ => [internal] load build definition from Dockerfile                       0.0s
+ => => transferring dockerfile: 415B                                       0.0s
+ ...
+ => => naming to docker.io/library/                                        0.0s
+
+Finished building docker image chat_with_eliza
+
+Publishing docker image 'chat_with_eliza:a2db1d4'
+ Pushing chat_with_eliza:a2db1d4 from local, may take multiple minutes depending on the size of the image ...
+ 74b9a56f90      31.09MB uploaded
+ 67d49562f2       3.73MB uploaded
+ ...
+ 45a06508-5c3a-4678-8e6d-e6399bf27538/chat_with_eliza:a2db1d4 pushed
+ 74b9a56f90 31.09MB 31.09MB server uploading'
