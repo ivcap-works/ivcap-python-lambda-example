@@ -99,7 +99,7 @@ the `make docker-publish` target will upload it to IVCAP.
 ## Deploying
 
 ```
-% make docker-publish
+% make service-register
 Building docker image chat_with_eliza
 docker build \
                 -t chat_with_eliza:latest \
@@ -121,4 +121,12 @@ Publishing docker image 'chat_with_eliza:a2db1d4'
  67d49562f2       3.73MB uploaded
  ...
  45a06508-5c3a-4678-8e6d-e6399bf27538/chat_with_eliza:a2db1d4 pushed
- 74b9a56f90 31.09MB 31.09MB server uploading'
+>> Successfully published 'chat_with_eliza:67e2ba4' as '45a06508-5c3a-4678-8e6d-e6399bf27538/chat_with_eliza:67e2ba4'
+cat /Users/ott030/src/IVCAP/Services/ivcap-python-lambda-service/service.json \
+        | sed 's|#DOCKER_TAG#|45a06508-5c3a-4678-8e6d-e6399bf27538/chat_with_eliza:67e2ba4|' \
+        | sed 's|#SERVICE_ID#|urn:ivcap:service:4ebd0208-8328-5d69-8c44-ec50939c0967|' \
+  | ivcap aspect update urn:ivcap:service:4ebd0208-8328-5d69-8c44-ec50939c0967 -f - --timeout 600
+{
+  "id": "urn:ivcap:aspect:5f9ade14-a4d0-4df4-9b16-d284edb6d3f5"
+}
+```
