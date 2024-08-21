@@ -57,7 +57,8 @@ PUSH_FROM := ""
 
 docker-publish: docker-build
 	@echo "Publishing docker image '${DOCKER_TAG}'"
-	@docker tag ${DOCKER_TAG_LOCAL} ${DOCKER_TAG}
+	docker tag ${DOCKER_TAG_LOCAL} ${DOCKER_TAG}
+	sleep 1
 	$(eval size:=$(shell docker inspect ${DOCKER_TAG} --format='{{.Size}}' | tr -cd '0-9'))
 	$(eval imageSize:=$(shell expr ${size} + 0 ))
 	@echo "... imageSize is ${imageSize}"
@@ -85,13 +86,12 @@ docker-publish-common:
 	fi
 	@echo ">> Successfully published '${DOCKER_TAG}' as '${SERVICE_IMG}'"
 
-# service-register: docker-publish
-# 	env IVCAP_SERVICE_ID=${SERVICE_ID} \
-# 		IVCAP_PROVIDER_ID=$(shell ivcap context get provider-id) \
-# 		IVCAP_ACCOUNT_ID=$(shell ivcap context get account-id) \
-# 		IVCAP_CONTAINER=${SERVICE_IMG} \
-# 	python ${SERVICE_FILE} --ivcap:print-service-description \
-# 	| ivcap service update --create ${SERVICE_ID} --format yaml -f - --timeout 600
+service-register: docker-publish
+	$(eval image:=$(shell ivcap package list ${DOCKER_TAG}))
+	cat ${PROJECT_DIR}/service.json \
+	| sed 's|#DOCKER_TAG#|${image}|' \
+	| sed 's|#SERVICE_ID#|${SERVICE_ID}|' \
+  | ivcap aspect update ${SERVICE_ID} -f - --timeout 600
 
 service-register:
 	$(eval image:=$(shell ivcap package list ${DOCKER_TAG}))
@@ -104,6 +104,5 @@ clean:
 	rm -rf ${PROJECT_DIR}/$(shell echo ${SERVICE_FILE} | cut -d. -f1 ).dist
 	rm -rf ${PROJECT_DIR}/$(shell echo ${SERVICE_FILE} | cut -d. -f1 ).build
 	rm -rf ${PROJECT_DIR}/cache ${PROJECT_DIR}/DATA
-
 
 FORCE:
