@@ -11,7 +11,7 @@ ADD eliza ./eliza
 
 # VERSION INFORMATION
 ARG VERSION ???
-ENV VERSION $VERSION
+ENV VERSION=$VERSION
 
 # Command to run
 ENTRYPOINT ["/app/run.sh"]
