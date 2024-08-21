@@ -2,52 +2,22 @@ SERVICE_NAME=chat-with-eliza
 SERVICE_TITLE=Chat with Eliza
 
 SERVICE_FILE=lambda.py
-
-# PROVIDER_NAME=ivcap.tutorial
-
-# LOCAL_DOCKER_REGISTRY=localhost:5000
-# K8S_DOCKER_REGISTRY=registry.default.svc.cluster.local
-# GCP_DOCKER_REGISTRY=australia-southeast1-docker.pkg.dev/reinvent-science-prod-2ae1/ivcap-service
-# DOCKER_REGISTRY=${GCP_DOCKER_REGISTRY}
-
-SERVICE_ID:=ivcap:service:$(shell python3 -c 'import uuid; print(uuid.uuid5(uuid.NAMESPACE_DNS, \
-        "${PROVIDER_NAME}" + "${SERVICE_CONTAINER_NAME}"));'):${SERVICE_CONTAINER_NAME}
+SERVICE_ID:=urn:ivcap:service:$(shell python3 -c 'import uuid; print(uuid.uuid5(uuid.NAMESPACE_DNS, \
+        "${PROVIDER_NAME}" + "${SERVICE_CONTAINER_NAME}"));')
 
 GIT_COMMIT := $(shell git rev-parse --short HEAD)
 GIT_TAG := $(shell git describe --abbrev=0 --tags ${TAG_COMMIT} 2>/dev/null || true)
 VERSION="${GIT_TAG}|${GIT_COMMIT}|$(shell date -Iminutes)"
 
 DOCKER_USER="$(shell id -u):$(shell id -g)"
-
 DOCKER_DOMAIN=$(shell echo ${PROVIDER_NAME} | sed -E 's/[-:]/_/g')
 DOCKER_NAME=$(shell echo ${SERVICE_NAME} | sed -E 's/-/_/g')
 DOCKER_VERSION=${GIT_COMMIT}
 DOCKER_TAG=${DOCKER_NAME}:${DOCKER_VERSION}
 DOCKER_TAG_LOCAL=${DOCKER_NAME}:latest
-# ifeq ($(DOCKER_REGISTRY),)
-# # looks like docker-desktop deployment
-# DOCKER_DEPLOY=${DOCKER_TAG}
-# else
-# DOCKER_DEPLOY=$(DOCKER_REGISTRY)/${DOCKER_TAG}
-# endif
 
 PROJECT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
-# TMP_DIR=/tmp
-# DOCKER_LOCAL_DATA_DIR=/tmp/DATA
-
-# GITHUB_USER_HOST?=git@github.com
-# SDK_CLONE_RELATIVE=.ivcap-sdk-python
-# SDK_CLONE_ABSOLUTE=${PROJECT_DIR}/.ivcap-sdk-python
-# SDK_COMMIT?=HEAD
-
-# # Check if DOCKER_REGISTRY is set to LOCAL_DOCKER_REGISTRY.
-# # If true, set TARGET_PLATFORM to linux/${GOARCH} to build for the local architecture.
-# # If false, set TARGET_PLATFORM to linux/amd64 as a default target platform.
-# ifeq ($(DOCKER_REGISTRY), $(LOCAL_DOCKER_REGISTRY))
-# TARGET_PLATFORM := linux/${GOARCH}
-# else
 TARGET_PLATFORM := linux/amd64
-# endif
 
 run:
 	env VERSION=$(VERSION) \
@@ -61,6 +31,7 @@ docker-run: #docker-build
 		-p 8080:8080 \
 		--user ${DOCKER_USER} \
 		--platform=${TARGET_PLATFORM} \
+		--rm \
 		${DOCKER_TAG_LOCAL}
 
 docker-debug: #docker-build
@@ -114,13 +85,6 @@ docker-publish-common:
 	fi
 	@echo ">> Successfully published '${DOCKER_TAG}' as '${SERVICE_IMG}'"
 
-# service-description:
-# 	env IVCAP_SERVICE_ID=${SERVICE_ID} \
-# 		IVCAP_PROVIDER_ID=$(shell ivcap context get provider-id) \
-# 		IVCAP_ACCOUNT_ID=$(shell ivcap context get account-id) \
-# 		IVCAP_CONTAINER=${SERVICE_IMG} \
-# 	python ${SERVICE_FILE} --ivcap:print-service-description
-
 # service-register: docker-publish
 # 	env IVCAP_SERVICE_ID=${SERVICE_ID} \
 # 		IVCAP_PROVIDER_ID=$(shell ivcap context get provider-id) \
@@ -128,6 +92,13 @@ docker-publish-common:
 # 		IVCAP_CONTAINER=${SERVICE_IMG} \
 # 	python ${SERVICE_FILE} --ivcap:print-service-description \
 # 	| ivcap service update --create ${SERVICE_ID} --format yaml -f - --timeout 600
+
+service-register:
+	$(eval image:=$(shell ivcap package list ${DOCKER_TAG}))
+	cat ${PROJECT_DIR}/service.json \
+	| sed 's|#DOCKER_TAG#|${image}|' \
+	| sed 's|#SERVICE_ID#|${SERVICE_ID}|' \
+  | ivcap aspect update ${SERVICE_ID} -f - --timeout 600
 
 clean:
 	rm -rf ${PROJECT_DIR}/$(shell echo ${SERVICE_FILE} | cut -d. -f1 ).dist
